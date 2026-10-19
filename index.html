@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanFácil - Seu Controle Financeiro Gratuito</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+    <!-- Modal Onboarding (Cadastro Inicial) -->
+    <div id="onboardingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center border border-slate-100 dark:border-slate-700">
+            <div class="w-16 h-16 bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Bem-vindo ao FinanFácil!</h2>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Sua ferramenta simples, gratuita e segura para organizar suas finanças pessoais. Como podemos te chamar?</p>
+            <form id="onboardingForm" onsubmit="salvarUsuario(event)">
+                <input type="text" id="inputNomeUsuario" required placeholder="Digite seu nome ou apelido"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 mb-4">
+                <button type="submit"
+                    class="w-full py-3 px-6 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 transition duration-200 flex items-center justify-center gap-2">
+                    Começar Agora <i class="fa-solid fa-arrow-right text-sm"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Layout Principal -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-brand-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/20 text-xl font-bold">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        FinanFácil
+                    </h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Olá, <span id="saudacaoNome" class="font-semibold text-brand-600 dark:text-brand-400">Usuário</span>! Aqui está seu resumo.</p>
+                </div>
+            </div>
+
+            <!-- Ações do Cabeçalho -->
+            <div class="flex items-center gap-2 self-end sm:self-auto">
+                <button onclick="alternarTema()" title="Alternar Tema"
+                    class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
+                    <i id="iconeTema" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="editarUsuario()" title="Editar Perfil"
+                    class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
+                    <i class="fa-solid fa-user-gear"></i>
+                </button>
+                <button onclick="exportarDados()" title="Exportar Dados"
+                    class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+                <button onclick="limparTodosDados()" title="Resetar Todos os Dados"
+                    class="p-2.5 rounded-xl border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 transition">
+                    <i class="fa-solid fa-trash-arrow-up"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Filtros e Período -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                <i class="fa-solid fa-calendar-days text-brand-600 dark:text-brand-400"></i>
+                <span>Período do Extrato:</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <select id="filtroMes" onchange="atualizarInterface()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="todos">Todos os Meses</option>
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
+                </select>
+                <select id="filtroAno" onchange="atualizarInterface()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </select>
+            </div>
+        </div>
+
+        <!-- Cards do Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Card Receita -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Total de Receitas</span>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </div>
+                </div>
+                <h3 id="cardReceitas" class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">R$ 0,00</h3>
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500"></div>
+            </div>
+
+            <!-- Card Despesa -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Total de Despesas</span>
+                    <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                </div>
+                <h3 id="cardDespesas" class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">R$ 0,00</h3>
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-rose-500"></div>
+            </div>
+
+            <!-- Card Saldo -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo Atual</span>
+                    <div id="badgeSaldo" class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                </div>
+                <h3 id="cardSaldo" class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">R$ 0,00</h3>
+                <div id="linhaSaldo" class="absolute bottom-0 left-0 right-0 h-1 bg-blue-500"></div>
+            </div>
+        </div>
+
+        <!-- Form e Gráficos Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <!-- Formulário de Novo Lançamento -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm h-fit">
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-brand-600 dark:text-brand-400"></i>
+                    Novo Lançamento
+                </h2>
+
+                <form id="formTransacao" onsubmit="adicionarTransacao(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Tipo</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center justify-center p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:has-[:checked]:bg-emerald-950/30 has-[:checked]:text-emerald-600 transition">
+                                <input type="radio" name="tipo" value="receita" checked class="hidden" onchange="atualizarCategoriasForm()">
+                                <i class="fa-solid fa-circle-arrow-up mr-2 text-emerald-500"></i> Receita
+                            </label>
+                            <label class="flex items-center justify-center p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50 dark:has-[:checked]:bg-rose-950/30 has-[:checked]:text-rose-600 transition">
+                                <input type="radio" name="tipo" value="despesa" class="hidden" onchange="atualizarCategoriasForm()">
+                                <i class="fa-solid fa-circle-arrow-down mr-2 text-rose-500"></i> Despesa
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Descrição</label>
+                        <input type="text" id="descricao" required placeholder="Ex: Salário, Mercado, NetFlix"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Valor (R$)</label>
+                            <input type="number" id="valor" step="0.01" min="0.01" required placeholder="0,00"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Data</label>
+                            <input type="date" id="data" required
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Categoria</label>
+                        <select id="categoria" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl shadow-md shadow-brand-500/20 transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-plus"></i> Adicionar Transação
+                    </button>
+                </form>
+            </div>
+
+            <!-- Gráfico de Despesas por Categoria -->
+            <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-brand-600 dark:text-brand-400"></i>
+                        Despesas por Categoria
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Visualização gráfica dos seus maiores gastos no período selecionado.</p>
+                </div>
+                <div class="relative flex items-center justify-center w-full max-h-[280px]">
+                    <canvas id="chartCategorias"></canvas>
+                </div>
+                <div id="semDadosGrafico" class="text-center py-12 text-slate-400 dark:text-slate-500 text-sm hidden">
+                    Nenhuma despesa registrada para o período selecionado.
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela Extrato / Transações -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden mb-12">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-700/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-brand-600 dark:text-brand-400"></i>
+                        Extrato de Transações
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Histórico detalhado das suas movimentações</p>
+                </div>
+                <div class="flex items-center gap-2 self-w-full sm:self-auto">
+                    <button onclick="definirFiltroTipo('todos')" id="btnFiltroTodos" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-brand-600 text-white">Todas</button>
+                    <button onclick="definirFiltroTipo('receita')" id="btnFiltroReceitas" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Receitas</button>
+                    <button onclick="definirFiltroTipo('despesa')" id="btnFiltroDespesas" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Despesas</button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                    <thead class="bg-slate-50 dark:bg-slate-700/50 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700">
+                        <tr>
+                            <th class="py-3.5 px-6">Data</th>
+                            <th class="py-3.5 px-6">Descrição</th>
+                            <th class="py-3.5 px-6">Categoria</th>
+                            <th class="py-3.5 px-6">Tipo</th>
+                            <th class="py-3.5 px-6 text-right">Valor</th>
+                            <th class="py-3.5 px-6 text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaTransacoes" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="semTransacoes" class="p-8 text-center text-slate-400 dark:text-slate-500 text-sm hidden">
+                Nenhuma transação encontrada. Adicione uma nova transação acima!
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-xs text-slate-400 dark:text-slate-500 py-6 border-t border-slate-200 dark:border-slate-800">
+            <p>FinanFácil &copy; <span id="anoFooter"></span> - Seu Controle Financeiro Pessoal Gratuito e Seguro.</p>
+            <p class="mt-1">Seus dados são armazenados localmente e nunca saem do seu navegador.</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript Principal -->
+    <script>
+        const CATEGORIAS = {
+            receita: ['Salário', 'Investimentos', 'Freelance', 'Vendas', 'Outros'],
+            despesa: ['Moradia', 'Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Educação', 'Contas/Serviços', 'Outros']
+        };
+
+        let transacoes = JSON.parse(localStorage.getItem('finanfacil_transacoes')) || [];
+        let nomeUsuario = localStorage.getItem('finanfacil_usuario') || '';
+        let temaDark = localStorage.getItem('finanfacil_tema') === 'dark';
+        let filtroTipoAtual = 'todos';
+        let chartInstance = null;
+
+        window.onload = function() {
+            document.getElementById('anoFooter').innerText = new Date().getFullYear();
+            document.getElementById('data').valueAsDate = new Date();
+            
+            inicializarTema();
+            verificarUsuario();
+            popularAnosFiltro();
+            atualizarCategoriasForm();
+            atualizarInterface();
+        };
+
+        function verificarUsuario() {
+            if (!nomeUsuario) {
+                document.getElementById('onboardingModal').classList.remove('hidden');
+            } else {
+                document.getElementById('saudacaoNome').innerText = nomeUsuario;
+            }
+        }
+
+        function salvarUsuario(e) {
+            e.preventDefault();
+            const input = document.getElementById('inputNomeUsuario').value.trim();
+            if (input) {
+                nomeUsuario = input;
+                localStorage.setItem('finanfacil_usuario', nomeUsuario);
+                document.getElementById('saudacaoNome').innerText = nomeUsuario;
+                document.getElementById('onboardingModal').classList.add('hidden');
+            }
+        }
+
+        function editarUsuario() {
+            const novoNome = prompt("Como gostaria de ser chamado?", nomeUsuario);
+            if (novoNome && novoNome.trim() !== "") {
+                nomeUsuario = novoNome.trim();
+                localStorage.setItem('finanfacil_usuario', nomeUsuario);
+                document.getElementById('saudacaoNome').innerText = nomeUsuario;
+            }
+        }
+
+        function inicializarTema() {
+            if (temaDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('iconeTema').classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        function alternarTema() {
+            temaDark = !temaDark;
+            localStorage.setItem('finanfacil_tema', temaDark ? 'dark' : 'light');
+            document.documentElement.classList.toggle('dark');
+            const icone = document.getElementById('iconeTema');
+            if (temaDark) {
+                icone.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                icone.classList.replace('fa-sun', 'fa-moon');
+            }
+            atualizarGrafico();
+        }
+
+        function atualizarCategoriasForm() {
+            const tipo = document.querySelector('input[name="tipo"]:checked').value;
+            const select = document.getElementById('categoria');
+            select.innerHTML = '';
+
+            CATEGORIAS[tipo].forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                select.appendChild(opt);
+            });
+        }
+
+        function popularAnosFiltro() {
+            const selectAno = document.getElementById('filtroAno');
+            const anoAtual = new Date().getFullYear();
+            selectAno.innerHTML = `<option value="todos">Todos os Anos</option>`;
+
+            const anos = new Set(transacoes.map(t => new Date(t.data).getFullYear()));
+            anos.add(anoAtual);
+
+            Array.from(anos).sort((a,b) => b - a).forEach(ano => {
+                const opt = document.createElement('option');
+                opt.value = ano;
+                opt.innerText = ano;
+                if(ano === anoAtual) opt.selected = true;
+                selectAno.appendChild(opt);
+            });
+        }
+
+        function adicionarTransacao(e) {
+            e.preventDefault();
+
+            const tipo = document.querySelector('input[name="tipo"]:checked').value;
+            const descricao = document.getElementById('descricao').value.trim();
+            const valor = parseFloat(document.getElementById('valor').value);
+            const data = document.getElementById('data').value;
+            const categoria = document.getElementById('categoria').value;
+
+            if (!descricao || isNaN(valor) || !data) return;
+
+            const novaTransacao = {
+                id: Date.now(),
+                tipo,
+                descricao,
+                valor,
+                data,
+                categoria
+            };
+
+            transacoes.unshift(novaTransacao);
+            salvarTransacoesLocal();
+            
+            document.getElementById('formTransacao').reset();
+            document.getElementById('data').valueAsDate = new Date();
+            atualizarCategoriasForm();
+            popularAnosFiltro();
+            atualizarInterface();
+        }
+
+        function excluirTransacao(id) {
+            if (confirm("Tem certeza que deseja excluir esta transação?")) {
+                transacoes = transacoes.filter(t => t.id !== id);
+                salvarTransacoesLocal();
+                atualizarInterface();
+            }
+        }
+
+        function salvarTransacoesLocal() {
+            localStorage.setItem('finanfacil_transacoes', JSON.stringify(transacoes));
+        }
+
+        function definirFiltroTipo(tipo) {
+            filtroTipoAtual = tipo;
+
+            const btnTodos = document.getElementById('btnFiltroTodos');
+            const btnRec = document.getElementById('btnFiltroReceitas');
+            const btnDesp = document.getElementById('btnFiltroDespesas');
+
+            const activeClass = "bg-brand-600 text-white";
+            const inactiveClass = "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300";
+
+            btnTodos.className = `px-3 py-1.5 rounded-lg text-xs font-semibold transition ${tipo === 'todos' ? activeClass : inactiveClass}`;
+            btnRec.className = `px-3 py-1.5 rounded-lg text-xs font-semibold transition ${tipo === 'receita' ? activeClass : inactiveClass}`;
+            btnDesp.className = `px-3 py-1.5 rounded-lg text-xs font-semibold transition ${tipo === 'despesa' ? activeClass : inactiveClass}`;
+
+            renderizarTabela();
+        }
+
+        function obterTransacoesFiltradas() {
+            const mes = document.getElementById('filtroMes').value;
+            const ano = document.getElementById('filtroAno').value;
+
+            return transacoes.filter(t => {
+                const dataTransacao = new Date(t.data + 'T00:00:00');
+                const bateuMes = mes === 'todos' || dataTransacao.getMonth().toString() === mes;
+                const bateuAno = ano === 'todos' || dataTransacao.getFullYear().toString() === ano;
+                return bateuMes && bateuAno;
+            });
+        }
+
+        function atualizarInterface() {
+            const filtradas = obterTransacoesFiltradas();
+            atualizarCards(filtradas);
+            renderizarTabela(filtradas);
+            atualizarGrafico(filtradas);
+        }
+
+        function atualizarCards(filtradas) {
+            const totalReceitas = filtradas
+                .filter(t => t.tipo === 'receita')
+                .reduce((acc, t) => acc + t.valor, 0);
+
+            const totalDespesas = filtradas
+                .filter(t => t.tipo === 'despesa')
+                .reduce((acc, t) => acc + t.valor, 0);
+
+            const saldo = totalReceitas - totalDespesas;
+
+            document.getElementById('cardReceitas').innerText = formatarMoeda(totalReceitas);
+            document.getElementById('cardDespesas').innerText = formatarMoeda(totalDespesas);
+            
+            const cardSaldoEl = document.getElementById('cardSaldo');
+            const linhaSaldoEl = document.getElementById('linhaSaldo');
+            const badgeSaldoEl = document.getElementById('badgeSaldo');
+
+            cardSaldoEl.innerText = formatarMoeda(saldo);
+
+            if (saldo < 0) {
+                cardSaldoEl.className = "text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400";
+                linhaSaldoEl.className = "absolute bottom-0 left-0 right-0 h-1 bg-rose-500";
+                badgeSaldoEl.className = "w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center";
+            } else if (saldo > 0) {
+                cardSaldoEl.className = "text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400";
+                linhaSaldoEl.className = "absolute bottom-0 left-0 right-0 h-1 bg-emerald-500";
+                badgeSaldoEl.className = "w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center";
+            } else {
+                cardSaldoEl.className = "text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white";
+                linhaSaldoEl.className = "absolute bottom-0 left-0 right-0 h-1 bg-blue-500";
+                badgeSaldoEl.className = "w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center";
+            }
+        }
+
+        function renderizarTabela(filtradas = obterTransacoesFiltradas()) {
+            const tbody = document.getElementById('tabelaTransacoes');
+            const semTransacoesEl = document.getElementById('semTransacoes');
+            tbody.innerHTML = '';
+
+            const exibidas = filtradas.filter(t => filtroTipoAtual === 'todos' || t.tipo === filtroTipoAtual);
+
+            if (exibidas.length === 0) {
+                semTransacoesEl.classList.remove('hidden');
+                return;
+            } else {
+                semTransacoesEl.classList.add('hidden');
+            }
+
+            exibidas.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-750 transition";
+
+                const ehReceita = t.tipo === 'receita';
+                const corValor = ehReceita ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-rose-600 dark:text-rose-400 font-semibold';
+                const sinal = ehReceita ? '+' : '-';
+                const tagTipo = ehReceita 
+                    ? `<span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">Receita</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400">Despesa</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-6 whitespace-nowrap text-slate-500 dark:text-slate-400 text-xs">${formatarData(t.data)}</td>
+                    <td class="py-3.5 px-6 font-medium text-slate-900 dark:text-white">${escaparHTML(t.descricao)}</td>
+                    <td class="py-3.5 px-6 whitespace-nowrap"><span class="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${t.categoria}</span></td>
+                    <td class="py-3.5 px-6 whitespace-nowrap">${tagTipo}</td>
+                    <td class="py-3.5 px-6 text-right whitespace-nowrap ${corValor}">${sinal} ${formatarMoeda(t.valor)}</td>
+                    <td class="py-3.5 px-6 text-center whitespace-nowrap">
+                        <button onclick="excluirTransacao(${t.id})" title="Excluir" class="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1 transition">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarGrafico(filtradas = obterTransacoesFiltradas()) {
+            const canvas = document.getElementById('chartCategorias');
+            const semDadosEl = document.getElementById('semDadosGrafico');
+
+            const despesas = filtradas.filter(t => t.tipo === 'despesa');
+
+            if (despesas.length === 0) {
+                canvas.classList.add('hidden');
+                semDadosEl.classList.remove('hidden');
+                if (chartInstance) chartInstance.destroy();
+                return;
+            } else {
+                canvas.classList.remove('hidden');
+                semDadosEl.classList.add('hidden');
+            }
+
+            const categoriasValores = {};
+            despesas.forEach(d => {
+                categoriasValores[d.categoria] = (categoriasValores[d.categoria] || 0) + d.valor;
+            });
+
+            const labels = Object.keys(categoriasValores);
+            const data = Object.values(categoriasValores);
+
+            const cores = [
+                '#f43f5e', '#3b82f6', '#10b981', '#f59e0b', 
+                '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'
+            ];
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: cores,
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: temaDark ? '#cbd5e1' : '#334155',
+                                font: { family: 'Inter', size: 12 },
+                                padding: 16
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${formatarMoeda(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(valor);
+        }
+
+        function formatarData(dataISO) {
+            if (!dataISO) return '';
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function escaparHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function exportarDados() {
+            if(transacoes.length === 0) {
+                alert("Nenhum dado disponível para exportar!");
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transacoes, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `FinanFacil_Backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function limparTodosDados() {
+            if (confirm("ATENÇÃO: Deseja apagar TODOS os dados e transações do FinanFácil? Esta ação não pode ser desfeita.")) {
+                localStorage.removeItem('finanfacil_transacoes');
+                localStorage.removeItem('finanfacil_usuario');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
